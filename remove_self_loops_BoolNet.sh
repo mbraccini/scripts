@@ -5,7 +5,7 @@ line=$(head -n 1 $1)
 OUTPUT_FILENAME=$filename"_no_selfloop"
 echo $line > $OUTPUT_FILENAME
 nodes=$2
-cat $1 | awk -v var=$nodes '{FS=","} /Gene*/ {
+cat $1 | awk -v var=$nodes '{FS=","; OFS = FS} /Gene*/ {
 	text=$2;
 	gsub(/(!|\(|\)|&|\|)/," ",text); 
 	max=split(text,array," "); 
