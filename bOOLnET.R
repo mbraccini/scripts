@@ -68,8 +68,21 @@ saveNetworkToFile <- function(bn, filename){
     write(l,file=filename)
 }
 
+constOrSelfLoop <- function(bn, gene){
+    previousIncoming <- bn[[gene]][["incoming"]]
+    previousIncoming[length(previousIncoming)] <- gene
+    bn[[gene]][["incoming"]]  <- previousIncoming
+    bn[[gene]][["func"]]      <- c(0,rep(1, 2^bn[[gene]][["k"]] - 1))
+    bn[[gene]][["expr"]]      <- sumOfProducts(gene, bn[[gene]][["incoming"]], bn[[gene]][["func"]])
+    return(bn)
+}
 
-saveNetworkToFile(rbn(10,3, selfLoops=TRUE), "prova/pippo")
+bn <- rbn(10,3, selfLoops=FALSE)
+print("TOPOLOGY-PRE")
+print(lapply(bn, `[[`, "expr"))
+print("TOPOLOGY-POST")
+bn <- constOrSelfLoop(bn,2)
+saveNetworkToFile(bn, "prova/pippo")
 bb <- loadNetwork("prova/pippo")
 print(bb)
 plotNetworkWiring(bb)
