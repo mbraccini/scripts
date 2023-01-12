@@ -19,13 +19,13 @@ rndBooleanState <- function(vectorLength){ return (sample(c(0,1), vectorLength, 
 sumOfProducts <- function(gene, incomingGenes, booleanFunction){
     numGenes <- length(incomingGenes)
     string <- glue('Gene{gene}, ')
-    print(booleanFunction)
+    #print(booleanFunction)
     for (index in seq(1,length(booleanFunction))){
         if (booleanFunction[index] == 1){
-            print(index)
-            print(booleanFunction[index])
+            #print(index)
+            #print(booleanFunction[index])
             minterm <- rev(as.numeric(intToBits(index-1))[1:numGenes])
-            print(minterm)
+            #print(minterm)
             string <- paste0(string, '(')
             for (i in seq(1,length(minterm))){
                 if (minterm[i] == 1){
@@ -56,4 +56,17 @@ rbn <- function(n, k){
     return(bn)
 } 
 
-rbn(10,3)
+saveNetworkToFile <- function(bn, filename){
+    head <- "targets, factors"
+    l <- lapply(bn, `[[`, "expr")
+    l <- paste(unlist(l), collapse="\n")
+    l <- paste(head, l, sep="\n")
+    write(l,file=filename)
+}
+
+
+saveNetworkToFile(rbn(10,3), "prova/pippo")
+
+bb <- loadNetwork("prova/pippo")
+print(bb)
+plotNetworkWiring(bb)
