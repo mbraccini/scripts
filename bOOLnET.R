@@ -44,12 +44,16 @@ sumOfProducts <- function(gene, incomingGenes, booleanFunction){
     return(string)
 }
 
-rbn <- function(n, k){
+rbn <- function(n, k, selfLoops=FALSE){
     bn <- vector("list", length = n)
     nodes <- c(1:n)
     for (i in (seq(1,n))){
         bn[[i]][["k"]]          <- k
-        bn[[i]][["incoming"]]   <- sample(nodes[!nodes == i], k, replace=FALSE)
+        if (selfLoops) {
+            bn[[i]][["incoming"]]   <- sample(nodes, k, replace=FALSE)
+        } else {
+            bn[[i]][["incoming"]]   <- sample(nodes[!nodes == i], k, replace=FALSE)
+        }
         bn[[i]][["func"]]       <- rndBooleanState(2^bn[[i]][["k"]])
         bn[[i]][["expr"]]       <- sumOfProducts(i, bn[[i]][["incoming"]], bn[[i]][["func"]])
     }
@@ -65,8 +69,7 @@ saveNetworkToFile <- function(bn, filename){
 }
 
 
-saveNetworkToFile(rbn(10,3), "prova/pippo")
-
+saveNetworkToFile(rbn(10,3, selfLoops=TRUE), "prova/pippo")
 bb <- loadNetwork("prova/pippo")
 print(bb)
 plotNetworkWiring(bb)
