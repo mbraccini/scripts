@@ -14,47 +14,58 @@ saveAttractors <- function(attractors, path="./"){
 
 
 #Generate a RANDOM Boolean state of a specified length
-rndBooleanState <- function(vectorLength){ return (sample(c(0,1), vectorLength, replace=TRUE)) }
+rndBooleanState     <- function(vectorLength){ return (sample(c(0,1), vectorLength, replace=TRUE)) }
+rndBooleanVector    <- function(vectorLength, bias){ return (sample(c(0,1), vectorLength, replace=TRUE, prob = c(1-bias, bias))) }
 
+# From Boolean vector to Logical expression with minterms
 sumOfProducts <- function(gene, incomingGenes, booleanFunction){
     numGenes <- length(incomingGenes)
     string <- glue('Gene{gene}, ')
+    atLeastOnePositiveOutput <- FALSE
     #print(booleanFunction)
-    for (index in seq(1,length(booleanFunction))){
-        if (booleanFunction[index] == 1){
-            #print(index)
-            #print(booleanFunction[index])
-            minterm <- rev(as.numeric(intToBits(index-1))[1:numGenes])
-            #print(minterm)
-            string <- paste0(string, '(')
-            for (i in seq(1,length(minterm))){
-                if (minterm[i] == 1){
-                    string <- paste0(string, glue('Gene{incomingGenes[i]}'))
-                } else {
-                    string <- paste0(string, glue('!Gene{incomingGenes[i]}'))
+    if (length(unique(booleanFunction)) > 1){ #caso in cui non siano tutti 0 o tutti 1
+        for (index in seq(1,length(booleanFunction))){
+            if (booleanFunction[index] == 1){
+                atLeastOnePositiveOutput <- TRUE
+                #print(index)
+                #print(booleanFunction[index])
+                minterm <- rev(as.numeric(intToBits(index-1))[1:numGenes])
+                #print(minterm)
+                string <- paste0(string, '(')
+                for (i in seq(1,length(minterm))){
+                    if (minterm[i] == 1){
+                        string <- paste0(string, glue('Gene{incomingGenes[i]}'))
+                    } else {
+                        string <- paste0(string, glue('!Gene{incomingGenes[i]}'))
+                    }
+                    string <- paste0(string, ' & ')
                 }
-                string <- paste0(string, ' & ')
+                string <- gsub('.{3}$', '', string)
+                string <- paste0(string, ')')
+                string <- paste0(string, ' | ')
             }
-            string <- gsub('.{3}$', '', string)
-            string <- paste0(string, ')')
-            string <- paste0(string, ' | ')
         }
+        if (atLeastOnePositiveOutput){
+            string <- gsub('.{3}$', '', string)
+        }
+    } else {
+        string <- paste0(string, glue('{booleanFunction[1]}'))
     }
-    string <- gsub('.{3}$', '', string)
     return(string)
 }
 
-rbn <- function(n, k, selfLoops=FALSE){
+rbn <- function(n, k, p, selfLoops=FALSE){
     bn <- vector("list", length = n)
     nodes <- c(1:n)
     for (i in (seq(1,n))){
         bn[[i]][["k"]]          <- k
+        bn[[i]][["p"]]          <- p
         if (selfLoops) {
             bn[[i]][["incoming"]]   <- sample(nodes, k, replace=FALSE)
         } else {
             bn[[i]][["incoming"]]   <- sample(nodes[!nodes == i], k, replace=FALSE)
         }
-        bn[[i]][["func"]]       <- rndBooleanState(2^bn[[i]][["k"]])
+        bn[[i]][["func"]]       <- rndBooleanVector(2^bn[[i]][["k"]], p)
         bn[[i]][["expr"]]       <- sumOfProducts(i, bn[[i]][["incoming"]], bn[[i]][["func"]])
     }
     return(bn)
@@ -127,13 +138,17 @@ augmRNDSelfLoop <- function(bn, gene){
     previousOutputLength        <- length(bn[[gene]][["func"]])
     bn[[gene]][["k"]]           <- bn[[gene]][["k"]] + 1
     bn[[gene]][["incoming"]]    <- previousIncoming
-    bn[[gene]][["func"]]        <- c(bn[[gene]][["func"]], rndBooleanState(previousOutputLength))
+    bn[[gene]][["func"]]        <- c(bn[[gene]][["func"]], rndBooleanVector(previousOutputLength, bn[[gene]][["p"]]))
     bn[[gene]][["expr"]]        <- sumOfProducts(gene, bn[[gene]][["incoming"]], bn[[gene]][["func"]])
     return(bn)
 }
 
+rbnSelfLoops <- function(n, k, p, SELF_LOOP_TYPE_FUNCTION){
 
-bn <- rbn(10,4, selfLoops=FALSE)
+}
+
+
+bn <- rbn(10,4,0.9,selfLoops=FALSE)
 print("TOPOLOGY-PRE")
 print(lapply(bn, `[[`, "expr"))
 print("TOPOLOGY-POST")
@@ -141,7 +156,9 @@ print(bn[[10]])
 
 bn <- augmRNDSelfLoop(bn,10)
 print(bn[[10]])
+
 print(lapply(bn, `[[`, "expr"))
+
 saveNetworkToFile(bn, "prova/pippo")
 bb <- loadNetwork("prova/pippo")
 print(bb)
