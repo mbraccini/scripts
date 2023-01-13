@@ -68,20 +68,61 @@ saveNetworkToFile <- function(bn, filename){
     write(l,file=filename)
 }
 
+################
+###### OR ######
+################
 constOrSelfLoop <- function(bn, gene){
-    previousIncoming <- bn[[gene]][["incoming"]]
-    previousIncoming[length(previousIncoming)] <- gene
-    bn[[gene]][["incoming"]]  <- previousIncoming
-    bn[[gene]][["func"]]      <- c(0,rep(1, 2^bn[[gene]][["k"]] - 1))
-    bn[[gene]][["expr"]]      <- sumOfProducts(gene, bn[[gene]][["incoming"]], bn[[gene]][["func"]])
+    previousIncoming            <- bn[[gene]][["incoming"]]
+    previousIncoming[1]         <- gene
+    bn[[gene]][["incoming"]]    <- previousIncoming
+    bn[[gene]][["func"]]        <- c(0 ,rep(1, 2^bn[[gene]][["k"]] - 1))
+    bn[[gene]][["expr"]]        <- sumOfProducts(gene, bn[[gene]][["incoming"]], bn[[gene]][["func"]])
+    return(bn)
+}
+augmOrSelfLoop <- function(bn, gene){
+    previousIncoming            <- bn[[gene]][["incoming"]]
+    previousIncoming            <- c(gene, previousIncoming)
+    previousOutputLength        <- length(bn[[gene]][["func"]])
+    bn[[gene]][["k"]]           <- bn[[gene]][["k"]] + 1
+    bn[[gene]][["incoming"]]    <- previousIncoming
+    bn[[gene]][["func"]]        <- c(bn[[gene]][["func"]], rep(1, previousOutputLength))
+    bn[[gene]][["expr"]]        <- sumOfProducts(gene, bn[[gene]][["incoming"]], bn[[gene]][["func"]])
     return(bn)
 }
 
-bn <- rbn(10,3, selfLoops=FALSE)
+################
+###### AND #####
+################
+constAndSelfLoop <- function(bn, gene){
+    previousIncoming            <- bn[[gene]][["incoming"]]
+    previousIncoming[1]         <- gene
+    bn[[gene]][["incoming"]]    <- previousIncoming
+    bn[[gene]][["func"]]        <- c(rep(0, 2^bn[[gene]][["k"]] - 1), 1)
+    bn[[gene]][["expr"]]        <- sumOfProducts(gene, bn[[gene]][["incoming"]], bn[[gene]][["func"]])
+    return(bn)
+}
+augmAndSelfLoop <- function(bn, gene){
+    previousIncoming            <- bn[[gene]][["incoming"]]
+    previousIncoming            <- c(gene, previousIncoming)
+    previousOutputLength        <- length(bn[[gene]][["func"]])
+    bn[[gene]][["k"]]           <- bn[[gene]][["k"]] + 1
+    bn[[gene]][["incoming"]]    <- previousIncoming
+    bn[[gene]][["func"]]        <- c(rep(0, previousOutputLength), bn[[gene]][["func"]])
+    bn[[gene]][["expr"]]        <- sumOfProducts(gene, bn[[gene]][["incoming"]], bn[[gene]][["func"]])
+    return(bn)
+}
+
+
+
+bn <- rbn(10,4, selfLoops=FALSE)
 print("TOPOLOGY-PRE")
 print(lapply(bn, `[[`, "expr"))
 print("TOPOLOGY-POST")
-bn <- constOrSelfLoop(bn,2)
+print(bn[[10]])
+
+bn <- augmAndSelfLoop(bn,10)
+print(bn[[10]])
+print(lapply(bn, `[[`, "expr"))
 saveNetworkToFile(bn, "prova/pippo")
 bb <- loadNetwork("prova/pippo")
 print(bb)
