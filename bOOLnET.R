@@ -150,11 +150,11 @@ addSelfLoops <- function(bn, numberOfSelfLoopsToAdd, SELF_LOOP_TYPE_FUNCTION){
     }
     i=1
     while(numberOfSelfLoopsToAdd > 0 & i <= length(bn)){
-        i = i + 1
         if (!(bn[[i]][["id"]] %in% bn[[i]][["incoming"]])){ #non è un selfloop
             bn <- SELF_LOOP_TYPE_FUNCTION(bn, i)
             numberOfSelfLoopsToAdd <- numberOfSelfLoopsToAdd - 1
         }
+        i = i + 1
     }
     return (bn)
 }
@@ -188,6 +188,24 @@ commonSea <- function(attractors){
             )
 }
 
+# Format conversion, from my description to BoolNet object, passing from filesystem
+toBoolNet <- function(bn, filename) {
+    saveNetworkToFile(bn, filename)
+    return(loadNetwork(filename))
+}
+# Change temporarily the bit of boolean vector to respect the fixed nodes of the Boolean network
+applyFixedGenes <- function(bn, booleanState) {
+    for (i in seq_len(length(booleanState))){
+        if ( bn$fixed[i] != -1){
+            booleanState[i] <- bn$fixed[i]
+        }
+    }
+    return(booleanState)
+}
+
+
+library(BoolNet)
+
 bn <- rbn(5,3,0.9,selfLoops=FALSE)
 print("TOPOLOGY-PRE")
 print(lapply(bn, `[[`, "expr"))
@@ -199,14 +217,12 @@ bn <- constANDSelfLoop(bn,5)
 bn <- augmANDSelfLoop(bn,1)
 print(numberOfSelfLoops(bn))
 
-bn <- addSelfLoops(bn, 2, constANDSelfLoop)
+bn <- addSelfLoops(bn, 3, constANDSelfLoop)
 print(numberOfSelfLoops(bn))
 
 print(lapply(bn, `[[`, "expr"))
 
-saveNetworkToFile(bn, "prova/pippo")
-library(BoolNet)
-bb <- loadNetwork("prova/pippo")
+bb <- toBoolNet(bn, "prova/pippo")
 print(bb)
 plotNetworkWiring(bb)
 
