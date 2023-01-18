@@ -165,18 +165,41 @@ numberOfSelfLoops <- function(bn){
     return(sum(sl, na.rm = TRUE))
 }
 
+#the set of nodes that always assume the same value—either 0 or 1—along all the attractors of the BN.
+commonSea <- function(attractors){
+    noAttractors <- length(attractors$attractors)
+    df <- getAttractorSequence(attractors, 1)
+    if (noAttractors > 1){
+        for (i in seq(2,noAttractors)){
+           df <- rbind(df, getAttractorSequence(attractors, i))
+        }   
+    }
+    temp <- colSums(df, na.rm=FALSE)/nrow(df)
+    commonSeaOnes   <- which(temp==1)
+    commonSeaZeros  <- which(temp==0)
+    specificIsland <- temp[which(temp!=1 & temp!=0)]
+    return(
+            list("commonSeaSize"  = length(commonSeaOnes) + length(commonSeaZeros),
+                 "commonSeaOnes"  = commonSeaOnes,
+                 "commonSeaZeros" = commonSeaZeros,
+                 "specificIslandSize" = length(specificIsland),
+                 "specificIsland"= specificIsland
+                )
+            )
+}
+
 bn <- rbn(5,3,0.9,selfLoops=FALSE)
 print("TOPOLOGY-PRE")
 print(lapply(bn, `[[`, "expr"))
 print("TOPOLOGY-POST")
 
 
-bn <- augmRNDSelfLoop(bn,5)
+bn <- constANDSelfLoop(bn,5)
 
-bn <- augmRNDSelfLoop(bn,1)
+bn <- augmANDSelfLoop(bn,1)
 print(numberOfSelfLoops(bn))
 
-bn <- addSelfLoops(bn, 3, augmANDSelfLoop)
+bn <- addSelfLoops(bn, 2, constANDSelfLoop)
 print(numberOfSelfLoops(bn))
 
 print(lapply(bn, `[[`, "expr"))
@@ -186,3 +209,8 @@ library(BoolNet)
 bb <- loadNetwork("prova/pippo")
 print(bb)
 plotNetworkWiring(bb)
+
+atts <- getAttractors(bb)
+print(atts$attractors)
+print(length(atts$attractors))
+commonSea(atts)
