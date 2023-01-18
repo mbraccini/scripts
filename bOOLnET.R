@@ -58,6 +58,7 @@ rbn <- function(n, k, p, selfLoops=FALSE){
     bn <- vector("list", length = n)
     nodes <- c(1:n)
     for (i in (seq(1,n))){
+        bn[[i]][["id"]]    <- i
         bn[[i]][["k"]]          <- k
         bn[[i]][["p"]]          <- p
         if (selfLoops) {
@@ -143,23 +144,45 @@ augmRNDSelfLoop <- function(bn, gene){
     return(bn)
 }
 
-rbnSelfLoops <- function(n, k, p, SELF_LOOP_TYPE_FUNCTION){
-
+addSelfLoops <- function(bn, numberOfSelfLoopsToAdd, SELF_LOOP_TYPE_FUNCTION){
+    if (numberOfSelfLoops(bn) + numberOfSelfLoopsToAdd > length(bn)){
+        stop("Impossible to add the required number of selfloops, its number is greater than the number of genes!")
+    }
+    i=1
+    while(numberOfSelfLoopsToAdd > 0 & i <= length(bn)){
+        i = i + 1
+        if (!(bn[[i]][["id"]] %in% bn[[i]][["incoming"]])){ #non è un selfloop
+            bn <- SELF_LOOP_TYPE_FUNCTION(bn, i)
+            numberOfSelfLoopsToAdd <- numberOfSelfLoopsToAdd - 1
+        }
+    }
+    return (bn)
 }
 
+# No. of selfloops in a Boolean network
+numberOfSelfLoops <- function(bn){
+    sl <- sapply(bn, FUN= function(i) i$id %in% i$incoming)
+    return(sum(sl, na.rm = TRUE))
+}
 
-bn <- rbn(10,4,0.9,selfLoops=FALSE)
+bn <- rbn(5,3,0.9,selfLoops=FALSE)
 print("TOPOLOGY-PRE")
 print(lapply(bn, `[[`, "expr"))
 print("TOPOLOGY-POST")
-print(bn[[10]])
 
-bn <- augmRNDSelfLoop(bn,10)
-print(bn[[10]])
+
+bn <- augmRNDSelfLoop(bn,5)
+
+bn <- augmRNDSelfLoop(bn,1)
+print(numberOfSelfLoops(bn))
+
+bn <- addSelfLoops(bn, 3, augmANDSelfLoop)
+print(numberOfSelfLoops(bn))
 
 print(lapply(bn, `[[`, "expr"))
 
 saveNetworkToFile(bn, "prova/pippo")
+library(BoolNet)
 bb <- loadNetwork("prova/pippo")
 print(bb)
 plotNetworkWiring(bb)
