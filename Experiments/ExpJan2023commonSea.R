@@ -1,23 +1,18 @@
 library(BoolNet)
 source("bOOLnET.R")
 
-simulateNet <- function(bn, initialStates) {
-    initialStatesWithFixedGenesPerNetwork <- lapply(initialStates, FUN=function(x) applyFixedGenes(bn,x))
-    atts <- getAttractors(bn, 
-                            type = "synchronous", 
-                            method = "chosen", 
-                            startStates = initialStatesWithFixedGenesPerNetwork)
-    return(commonSea(atts))
+
+#Check if selfloops are in the commonSea passed (COmposed of all 1's or all 0's)
+retrieveSelfLoopsInCommonSea <- function(myNet, commonSea){
+        tempSelfLoopsNames  <- paste0("Gene",getSelfLoops(myNet))
+        commonSeaONES       <- names(commonSea$commonSeaOnes)
+        CommonSeaZEROS      <- names(commonSea$commonSeaZeros)
+        inONES      <- tempSelfLoopsNames[tempSelfLoopsNames %in% commonSeaONES]
+        inZEROS     <- tempSelfLoopsNames[tempSelfLoopsNames %in% CommonSeaZEROS]
+        return(list("inONES"=inONES,"inZEROS"=inZEROS))
 }
 
-get_fun <- function(fun){
-             fun <- deparse(fun)
-             chunk <- tail(fun, 1)
-             words <- strsplit(chunk, "\"")[[1]]
-             return(words[2])
-           }
-
-set.seed(2)
+set.seed(5)
 k       <- 2
 bias    <- 0.5
 noInitialStates <- 10
@@ -36,25 +31,56 @@ for(i in seq_len(noNetworks)){
     bn  <- toBoolNet(net, glue('{subFolderSL_0}/bn_{i}'))
 
     #### SIMULATE NET ####
-    simulateNet(bn, initialStates)
+    atts <- simulateNet(bn, initialStates)
     ######################
 
     for (noSelfLoops in c(2, 4, 6)){
-        toAdd <- noSelfLoops - numberOfSelfLoops(net)
+        #toAdd <- noSelfLoops - numberOfSelfLoops(net)
 
-        for (selfLoopType in c(constANDSelfLoop)){
-            slType          <- as.character(substitute(selfLoopType))
-            print(get_fun(slType))
-            subFolderSL_n    <- glue('{mainFolder}/sl{noSelfLoops}_{deparse(substitute(selfLoopType))}')
+        for (selfLoopType in c("OR")){
+
+            result = switch(  
+            selfLoopType,  
+            "OR"= {
+                print("OR")
+                SL_FUN = augmORSelfLoop
+                SL_TYPE_STRING = "augmOR"
+
+            },  
+            "AND"= {
+                print("AND")
+                SL_FUN = augmANDSelfLoop
+                SL_TYPE_STRING = "augmAND"
+
+            },
+            "RND"= {
+                print("RND")
+                SL_FUN = augmRNDSelfLoop
+                SL_TYPE_STRING = "augmRND"
+
+            },   
+            stop(paste0("No handler for ", selfLoopType))
+            )  
+
+            subFolderSL_n    <- glue('{mainFolder}/sl{noSelfLoops}_{SL_TYPE_STRING}')
             dir.create(subFolderSL_n)
 
-            net <- addSelfLoops(net, toAdd, selfLoopType)
-            bn  <- toBoolNet(net, glue('{subFolderSL_n}/bn_{i}'))
+            temp_net <- addSelfLoops(net, noSelfLoops, SL_FUN)
+            
+            temp_bn  <- toBoolNet(temp_net, glue('{subFolderSL_n}/bn_{i}'))
 
             #### SIMULATE NET ####
-            simulateNet(bn, initialStates)
+            atts <- simulateNet(temp_bn, initialStates)
+            CS <- commonSea(atts)
+            r <- retrieveSelfLoopsInCommonSea(temp_net, CS)
+
+             print(r)
+             print(lapply(r, FUN=length))
+
+
+            break
             ######################
-         
+
         }
     }
 }

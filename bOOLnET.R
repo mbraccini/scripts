@@ -160,6 +160,13 @@ addSelfLoops <- function(bn, numberOfSelfLoopsToAdd, SELF_LOOP_TYPE_FUNCTION){
 }
 
 # No. of selfloops in a Boolean network
+getSelfLoops <- function(bn){
+    sl <- sapply(bn, FUN= function(i) {if (i$id %in% i$incoming) return (i$id) else NA})
+    sl <- sl[!is.na(sl)]
+    print(sl)
+}
+
+# No. of selfloops in a Boolean network
 numberOfSelfLoops <- function(bn){
     sl <- sapply(bn, FUN= function(i) i$id %in% i$incoming)
     return(sum(sl, na.rm = TRUE))
@@ -203,30 +210,40 @@ applyFixedGenes <- function(bn, booleanState) {
     return(booleanState)
 }
 
+#Retrieve attractors starting from bagOfStates
+simulateNet <- function(bn, initialStates) {
+    initialStatesWithFixedGenesPerNetwork <- lapply(initialStates, FUN=function(x) applyFixedGenes(bn,x))
+    atts <- getAttractors(bn, 
+                            type = "synchronous", 
+                            method = "chosen", 
+                            startStates = initialStatesWithFixedGenesPerNetwork)
+    return(atts)
+}
+
 
 library(BoolNet)
 
-bn <- rbn(5,3,0.9,selfLoops=FALSE)
-print("TOPOLOGY-PRE")
-print(lapply(bn, `[[`, "expr"))
-print("TOPOLOGY-POST")
+#bn <- rbn(5,3,0.9,selfLoops=FALSE)
+#print("TOPOLOGY-PRE")
+#print(lapply(bn, `[[`, "expr"))
+#print("TOPOLOGY-POST")
 
 
-bn <- constANDSelfLoop(bn,5)
+#bn <- constANDSelfLoop(bn,5)
 
-bn <- augmANDSelfLoop(bn,1)
-print(numberOfSelfLoops(bn))
+#bn <- augmANDSelfLoop(bn,1)
+#print(numberOfSelfLoops(bn))
 
-bn <- addSelfLoops(bn, 3, constANDSelfLoop)
-print(numberOfSelfLoops(bn))
+#bn <- addSelfLoops(bn, 3, constANDSelfLoop)
+#print(numberOfSelfLoops(bn))
 
-print(lapply(bn, `[[`, "expr"))
+#print(lapply(bn, `[[`, "expr"))
 
-bb <- toBoolNet(bn, "prova/pippo")
-print(bb)
-plotNetworkWiring(bb)
+#bb <- toBoolNet(bn, "prova/pippo")
+#print(bb)
+#plotNetworkWiring(bb)
 
-atts <- getAttractors(bb)
-print(atts$attractors)
-print(length(atts$attractors))
-commonSea(atts)
+#atts <- getAttractors(bb)
+#print(atts$attractors)
+#print(length(atts$attractors))
+#commonSea(atts)
