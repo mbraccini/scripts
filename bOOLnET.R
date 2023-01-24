@@ -5,10 +5,11 @@ numberOfGenes <- function(net){
     return (length(net[[1]])) # We read from the imported network its number of nodes
 }
 
-saveAttractors <- function(attractors, path="./"){
+#ATTRACTORS TO FILE
+saveAttractors <- function(attractors, prefixName, path="."){
     for (i in seq(1,length(attractors$attractors))){
         att <- getAttractorSequence(attractors, i)
-        write.table(att, glue('{path}att_{i}.csv'), sep = ",", col.names = colnames(att),row.names=FALSE)
+        write.table(att, glue('{path}/{prefixName}_att_{i}.csv'), sep = ",", col.names = colnames(att),row.names=FALSE)
     }
 }
 
@@ -163,7 +164,7 @@ addSelfLoops <- function(bn, numberOfSelfLoopsToAdd, SELF_LOOP_TYPE_FUNCTION){
 getSelfLoops <- function(bn){
     sl <- sapply(bn, FUN= function(i) {if (i$id %in% i$incoming) return (i$id) else NA})
     sl <- sl[!is.na(sl)]
-    print(sl)
+    return(sl)
 }
 
 # No. of selfloops in a Boolean network
