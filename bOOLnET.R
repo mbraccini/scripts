@@ -13,7 +13,7 @@ saveAttractors <- function(attractors, prefixName, path="."){
     }
 }
 
-
+fromIntegerToBitVector <- function(integer, numOfBits) {rev(as.integer(intToBits(c(integer)))[1:numOfBits])}
 #Generate a RANDOM Boolean state of a specified length
 rndBooleanState     <- function(vectorLength){ return (sample(c(0,1), vectorLength, replace=TRUE)) }
 rndBooleanVector    <- function(vectorLength, bias){ return (sample(c(0,1), vectorLength, replace=TRUE, prob = c(1-bias, bias))) }
@@ -68,6 +68,25 @@ rbn <- function(n, k, p, selfLoops=FALSE){
             bn[[i]][["incoming"]]   <- sample(nodes[!nodes == i], k, replace=FALSE)
         }
         bn[[i]][["func"]]       <- rndBooleanVector(2^bn[[i]][["k"]], p)
+        bn[[i]][["expr"]]       <- sumOfProducts(i, bn[[i]][["incoming"]], bn[[i]][["func"]])
+    }
+    return(bn)
+} 
+
+#Draw an RBN from the subset defined by the setOfAllowedFunctions
+rbnSubset <- function(n, k, p, selfLoops=FALSE, setOfAllowedFunctions){
+    bn <- vector("list", length = n)
+    nodes <- c(1:n)
+    for (i in (seq(1,n))){
+        bn[[i]][["id"]]    <- i
+        bn[[i]][["k"]]          <- k
+        bn[[i]][["p"]]          <- p
+        if (selfLoops) {
+            bn[[i]][["incoming"]]   <- sample(nodes, k, replace=FALSE)
+        } else {
+            bn[[i]][["incoming"]]   <- sample(nodes[!nodes == i], k, replace=FALSE)
+        }
+        bn[[i]][["func"]]       <- sample(setOfAllowedFunctions, 1, replace=TRUE)
         bn[[i]][["expr"]]       <- sumOfProducts(i, bn[[i]][["incoming"]], bn[[i]][["func"]])
     }
     return(bn)
@@ -248,3 +267,25 @@ library(BoolNet)
 #print(atts$attractors)
 #print(length(atts$attractors))
 #commonSea(atts)
+
+
+k2Functions <- list(fromIntegerToBitVector(integer=0, numOfBits=4),
+                    fromIntegerToBitVector(integer=1, numOfBits=4), 
+                    fromIntegerToBitVector(integer=2, numOfBits=4),
+                    fromIntegerToBitVector(integer=3, numOfBits=4),
+                    fromIntegerToBitVector(integer=4, numOfBits=4),
+                    fromIntegerToBitVector(integer=5, numOfBits=4),
+                    fromIntegerToBitVector(integer=6, numOfBits=4),
+                    fromIntegerToBitVector(integer=7, numOfBits=4),
+                    fromIntegerToBitVector(integer=8, numOfBits=4),
+                    fromIntegerToBitVector(integer=9, numOfBits=4), 
+                    fromIntegerToBitVector(integer=10, numOfBits=4),
+                    fromIntegerToBitVector(integer=11, numOfBits=4),
+                    fromIntegerToBitVector(integer=12, numOfBits=4),
+                    fromIntegerToBitVector(integer=13, numOfBits=4),
+                    fromIntegerToBitVector(integer=14, numOfBits=4),
+                    fromIntegerToBitVector(integer=15, numOfBits=4)
+                    )
+
+sample(k2Functions,100,replace=TRUE)
+#rbnSubset <- function(n, k, p, selfLoops=FALSE, setOfAllowedFunctions){
