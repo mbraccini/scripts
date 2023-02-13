@@ -13,7 +13,7 @@ saveAttractors <- function(attractors, prefixName, path="."){
     }
 }
 
-fromIntegerToBitVector <- function(integer, numOfBits) {rev(as.integer(intToBits(c(integer)))[1:numOfBits])}
+fromIntegerToBitVector <- function(integer, numOfBits) {rev(as.integer(intToBits(integer))[1:numOfBits])}
 #Generate a RANDOM Boolean state of a specified length
 rndBooleanState     <- function(vectorLength){ return (sample(c(0,1), vectorLength, replace=TRUE)) }
 rndBooleanVector    <- function(vectorLength, bias){ return (sample(c(0,1), vectorLength, replace=TRUE, prob = c(1-bias, bias))) }
@@ -240,6 +240,37 @@ simulateNet <- function(bn, initialStates) {
     return(atts)
 }
 
+#Functions that returns the Boolean functions with no irrelevant genes
+booleanFunctionsWithNoIrrelevantGenes <- function(k){
+    # Generate a list of all assignments of n variables with N possible values
+    allcombn <- function(N,n)
+    {
+        rownum = N^n
+        sapply(n:1,function(i)
+            {
+                    rep(seq_len(N),each=N^(i-1),len=rownum)
+                })
+    }
+    table <- allcombn(2,k)-1
+    numOfPossibleBoolFuns <- 2^(2^k)
+
+    functionsWithNoIrrelevantGenes <- list()
+
+    for (decimalNum in seq(0,numOfPossibleBoolFuns-1)){
+        func <- fromIntegerToBitVector(integer=decimalNum, numOfBits=2^k)
+        dropGenes <- apply(table,2,function(gene)
+                  # determine all genes that have no influence on the results,
+                  # i.e. the result column is equal for 0 values and 1 values
+                          {
+                            (identical(func[gene==1],
+                                  func[gene==0]))
+                          })
+        if (sum(dropGenes) == 0){
+            functionsWithNoIrrelevantGenes[[length(functionsWithNoIrrelevantGenes) + 1]] <- func
+        } 
+    }
+    return (functionsWithNoIrrelevantGenes)
+}
 
 library(BoolNet)
 
@@ -269,23 +300,9 @@ library(BoolNet)
 #commonSea(atts)
 
 
-k2Functions <- list(fromIntegerToBitVector(integer=0, numOfBits=4),
-                    fromIntegerToBitVector(integer=1, numOfBits=4), 
-                    fromIntegerToBitVector(integer=2, numOfBits=4),
-                    fromIntegerToBitVector(integer=3, numOfBits=4),
-                    fromIntegerToBitVector(integer=4, numOfBits=4),
-                    fromIntegerToBitVector(integer=5, numOfBits=4),
-                    fromIntegerToBitVector(integer=6, numOfBits=4),
-                    fromIntegerToBitVector(integer=7, numOfBits=4),
-                    fromIntegerToBitVector(integer=8, numOfBits=4),
-                    fromIntegerToBitVector(integer=9, numOfBits=4), 
-                    fromIntegerToBitVector(integer=10, numOfBits=4),
-                    fromIntegerToBitVector(integer=11, numOfBits=4),
-                    fromIntegerToBitVector(integer=12, numOfBits=4),
-                    fromIntegerToBitVector(integer=13, numOfBits=4),
-                    fromIntegerToBitVector(integer=14, numOfBits=4),
-                    fromIntegerToBitVector(integer=15, numOfBits=4)
-                    )
-
-sample(k2Functions,100,replace=TRUE)
+#sample(k2Functions,100,replace=TRUE)
 #rbnSubset <- function(n, k, p, selfLoops=FALSE, setOfAllowedFunctions){
+sample(irrelevantGenesBoolNet(2),10,replace=TRUE)
+
+
+allk2Functions <- lapply(seq(0,15), FUN=fromIntegerToBitVector, numOfBits=4)
