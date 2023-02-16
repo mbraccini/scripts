@@ -86,7 +86,7 @@ rbnSubset <- function(n, k, p, selfLoops=FALSE, setOfAllowedFunctions){
         } else {
             bn[[i]][["incoming"]]   <- sample(nodes[!nodes == i], k, replace=FALSE)
         }
-        bn[[i]][["func"]]       <- sample(setOfAllowedFunctions, 1, replace=TRUE)
+        bn[[i]][["func"]]       <- sample(setOfAllowedFunctions, 1, replace=TRUE)[[1]]
         bn[[i]][["expr"]]       <- sumOfProducts(i, bn[[i]][["incoming"]], bn[[i]][["func"]])
     }
     return(bn)
@@ -302,7 +302,11 @@ library(BoolNet)
 
 #sample(k2Functions,100,replace=TRUE)
 #rbnSubset <- function(n, k, p, selfLoops=FALSE, setOfAllowedFunctions){
-sample(irrelevantGenesBoolNet(2),10,replace=TRUE)
+#sample(booleanFunctionsWithNoIrrelevantGenes(2),10,replace=TRUE)
 
 
-allk2Functions <- lapply(seq(0,15), FUN=fromIntegerToBitVector, numOfBits=4)
+#allk2Functions <- lapply(seq(0,15), FUN=fromIntegerToBitVector, numOfBits=4)
+
+
+
+#booleanFunctionsWithNoIrrelevantGenes(2)
