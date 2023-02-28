@@ -1,5 +1,5 @@
 library(BoolNet)
-source("../bOOLnET.R")
+source("bOOLnET.R")
 
 
 #Check if selfloops are in the commonSea passed (COmposed of all 1's or all 0's)
