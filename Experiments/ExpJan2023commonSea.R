@@ -1,5 +1,5 @@
 library(BoolNet)
-source("bOOLnET.R")
+source("../bOOLnET.R")
 
 
 #Check if selfloops are in the commonSea passed (COmposed of all 1's or all 0's)
@@ -17,7 +17,7 @@ k       <- 2
 bias    <- 0.5
 noInitialStates <- 1000
 noNodes <- 100
-mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}')
+mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors')
 dir.create(mainFolder)
 initialStates <- lapply(rep(1, noInitialStates), function(x) rndBooleanState(noNodes))
 noNetworks <- 100
