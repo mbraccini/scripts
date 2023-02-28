@@ -192,13 +192,19 @@ numberOfSelfLoops <- function(bn){
     return(sum(sl, na.rm = TRUE))
 }
 
+computePseudoAttractor <- function(att){
+    means <- colMeans(att)
+    return(sapply(means, FUN=function(x) ifelse(x>=0.5, 1, 0)))
+}
+
 #the set of nodes that always assume the same value—either 0 or 1—along all the attractors of the BN.
 commonSea <- function(attractors){
     noAttractors <- length(attractors$attractors)
-    df <- getAttractorSequence(attractors, 1)
+
+    df <- computePseudoAttractor(getAttractorSequence(attractors, 1))
     if (noAttractors > 1){
         for (i in seq(2,noAttractors)){
-           df <- rbind(df, getAttractorSequence(attractors, i))
+           df <- rbind(df, computePseudoAttractor(getAttractorSequence(attractors, i)))
         }   
     }
     temp <- colSums(df, na.rm=FALSE)/nrow(df)
