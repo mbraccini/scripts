@@ -205,9 +205,11 @@ commonSea <- function(attractors){
     if (noAttractors > 1){
         for (i in seq(2,noAttractors)){
            df <- rbind(df, computePseudoAttractor(getAttractorSequence(attractors, i)))
-        }   
+        }  
+        temp <- colSums(df, na.rm=FALSE)/nrow(df)
+    } else {
+        temp <- df
     }
-    temp <- colSums(df, na.rm=FALSE)/nrow(df)
     commonSeaOnes   <- which(temp==1)
     commonSeaZeros  <- which(temp==0)
     specificIsland <- temp[which(temp!=1 & temp!=0)]
@@ -278,7 +280,6 @@ booleanFunctionsWithNoIrrelevantGenes <- function(k){
     return (functionsWithNoIrrelevantGenes)
 }
 
-library(BoolNet)
 
 #bn <- rbn(5,3,0.9,selfLoops=FALSE)
 #print("TOPOLOGY-PRE")
