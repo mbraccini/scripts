@@ -1,8 +1,8 @@
 library(glue)
 
-path="n100k2p05/"
+path="n100k2p05_pseudoAttractors_noTRUE_FALSE_XOR_XNOR/"
 name <- "slInZeros"
-pdf(glue('SL_in_commonSea_{name}.pdf'))
+pdf(glue('SL_in_commonSea_pseudoAttractors_all_functions_noTRUE_FALSE_XOR_XNOR_{name}.pdf'))
 res     <- list()
 labels  <- list()
 for (SLNUMBER in c(5,10,20))

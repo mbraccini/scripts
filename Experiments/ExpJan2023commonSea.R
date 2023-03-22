@@ -74,6 +74,10 @@ for(i in seq_len(noNetworks)){
     CS <- commonSea(atts)
     ######################
     write(CS$commonSeaSize,  file=glue('{mainFolder}/commonSeaSize_sl_0.txt'),  append=TRUE)
+    noAttractors        <- length(atts$attractors)
+    noPseudoAttractors  <- numberOfPseudoAttractors(atts)
+    write(noAttractors,  file=glue('{mainFolder}/no_attractors_0.txt'),  append=TRUE)
+    write(noPseudoAttractors,  file=glue('{mainFolder}/no_PseudoAttractors_0.txt'),  append=TRUE)
 
     for (noSelfLoops in c(5, 10, 20)){
         for (selfLoopType in c("OR","AND","RND")){

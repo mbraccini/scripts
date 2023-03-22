@@ -1,7 +1,7 @@
 library(BoolNet)
 source("../bOOLnET.R")
 
-set.seed(11)
+set.seed(99)
 k       <- 2
 bias    <- 0.5
 noNetworks <- 100
@@ -12,7 +12,7 @@ stats_atts_mean_size <- list()
 
 start <- 50
 end <- 200
-mainFolder <- glue('testing_all_functions')
+mainFolder <- glue('testing_all_functions_pseudoAttractors')
 dir.create(mainFolder)
 #delta <- 500
 ### CASO SENZA TRUE E FALSE ###
@@ -58,14 +58,14 @@ for (noNodes in nodesNumberVector){
     stats_atts_mean_size[[length(stats_atts_mean_size) +1]] <- res_mean_attrs_size
 }
 
-pdf(glue('NUOVI_RISULTATI_CommonSea_{start}-{end}_100_all_functions.pdf'))
+pdf(glue('PseudoAttractor_CommonSea_{start}-{end}_100_all_functions.pdf'))
 boxplot(stats,xaxt = "n", ylab="Common sea size / no. nodes", main="Size progression of the common sea (all functions allowed)")
 #axis(1, at = seq(1,((end-start)/delta)+1), labels = seq(start, end,by=delta)) # axis, ticks
 axis(1, at = seq(1,length(nodesNumberVector)), labels = nodesNumberVector) # axis, ticks
 mtext('no. nodes', side=1, line=3)
 dev.off()
 
-pdf(glue('NUOVI_RISULTATI_CommonSea_{start}-{end}_100_all_functions_attractors.pdf'))
+pdf(glue('PseudoAttractor_CommonSea_{start}-{end}_100_all_functions_attractors.pdf'))
 boxplot(stats_num_attractors,log="y",xaxt = "n", ylab="No. of attractors", main="No. of attractors")
 #axis(1, at = seq(1,((end-start)/delta)+1), labels = seq(start, end,by=delta)) # axis, ticks
 axis(1, at = seq(1,length(nodesNumberVector)), labels = nodesNumberVector) # axis, ticks
@@ -73,7 +73,7 @@ mtext('no. nodes', side=1, line=3)
 dev.off()
 
 
-pdf(glue('NUOVI_RISULTATI_CommonSea_{start}-{end}_100_all_functions_attractors_period.pdf'))
+pdf(glue('PseudoAttractor_CommonSea_{start}-{end}_100_all_functions_attractors_period.pdf'))
 boxplot(stats_atts_mean_size, log="y",xaxt = "n", ylab="Mean of the period", main="Mean of the attractors' period")
 #axis(1, at = seq(1,((end-start)/delta)+1), labels = seq(start, end,by=delta)) # axis, ticks
 axis(1, at = seq(1,length(nodesNumberVector)), labels = nodesNumberVector) # axis, ticks
