@@ -1,6 +1,7 @@
+#!/usr/bin/env Rscript
 library(BoolNet)
-source("bOOLnET.R")
-
+source("../bOOLnET.R")
+args = commandArgs(trailingOnly=TRUE)
 
 #Check if selfloops are in the commonSea passed (COmposed of all 1's or all 0's)
 retrieveSelfLoopsInCommonSea <- function(myNet, commonSea){
@@ -12,20 +13,58 @@ retrieveSelfLoopsInCommonSea <- function(myNet, commonSea){
         return(list("inONES"=inONES,"inZEROS"=inZEROS))
 }
 
-set.seed(5)
+# Number of pseudoAttractors
+numberOfPseudoAttractors <- function(attractors){
+    l <- list()
+    noAttractors <- length(attractors$attractors)
+    
+    for (i in seq(1,noAttractors)){
+        l[[i]] <- computePseudoAttractor(getAttractorSequence(attractors, i))
+    }
+    return (length(unique(l)))
+}
+
+
+ALL_FUNCTIONS <- as.logical(args[1])
+seed = as.integer(args[2])
+set.seed(seed)
+print(glue('seed: {seed}'))
 k       <- 2
 bias    <- 0.5
 noInitialStates <- 1000
 noNodes <- 100
-mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors')
-dir.create(mainFolder)
 initialStates <- lapply(rep(1, noInitialStates), function(x) rndBooleanState(noNodes))
 noNetworks <- 100
+
+
+if (!ALL_FUNCTIONS){
+    ### RBN Subset ###
+    allowedFunctions <- lapply(seq(0,15), FUN=fromIntegerToBitVector, numOfBits=4)
+    allowedFunctions[[7]] <- NULL  #XOR
+    allowedFunctions[[9]] <- NULL   #XNOR
+    allowedFunctions[[1]] <- NULL   #FALSE
+    allowedFunctions[[length(allowedFunctions)]] <- NULL    #TRUE
+    print("allowed functions")
+    allowedFunctions
+    #################
+    expString <- "_noTRUE_FALSE_XOR_XNOR"
+} else {
+    print("all functions")
+    expString <- "_allFunctions"
+}
+mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors{expString}_22Marzo23')
+dir.create(mainFolder)
 subFolderSL_0 <- glue('{mainFolder}/sl0')
 dir.create(subFolderSL_0)
 
+
 for(i in seq_len(noNetworks)){
-    net <- rbn(noNodes, k, bias, selfLoops=FALSE)
+    if (!ALL_FUNCTIONS){
+        net <- rbnSubset(n=noNodes, k=k, p=bias, selfLoops=FALSE, setOfAllowedFunctions=allowedFunctions)
+    } else {
+        net <- rbn(noNodes, k, bias, selfLoops=FALSE)
+    }
+
     #saveRDS(net, file = glue('{folder}/bn_{i}.RData'))
     bn  <- toBoolNet(net, glue('{subFolderSL_0}/bn_{i}'))
 
@@ -68,6 +107,12 @@ for(i in seq_len(noNetworks)){
             ######################
             res <- retrieveSelfLoopsInCommonSea(temp_net, CS)
             res_elab <- lapply(res, FUN=length)
+
+            noAttractors        <- length(atts$attractors)
+            noPseudoAttractors  <- numberOfPseudoAttractors(atts)
+            write(noAttractors,  file=glue('{mainFolder}/no_attractors_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
+            write(noPseudoAttractors,  file=glue('{mainFolder}/no_PseudoAttractors_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
+
             write(res_elab$inONES,  file=glue('{mainFolder}/slInOnes_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
             write(res_elab$inZEROS, file=glue('{mainFolder}/slInZeros_{noSelfLoops}_{SL_TYPE_STRING}.txt'), append=TRUE)
 
