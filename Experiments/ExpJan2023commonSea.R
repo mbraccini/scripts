@@ -37,19 +37,24 @@ distanceDistributionBetweenPseudoAttractors <- function(attractors){
     if (len > 1){
         for (i in seq(1,len - 1)){
             for (j in seq(i + 1, len)){
-                print(glue('{i}, {j}'))
-                print(pseudoAtts[[i]])
-                print(pseudoAtts[[j]])
+                #print(glue('{i}, {j}'))
+                #print(pseudoAtts[[i]])
+                #print(pseudoAtts[[j]])
                 d <- hammingDistance(pseudoAtts[[i]],pseudoAtts[[j]])
-                print(d)
+                #print(d)
                 distances <- c(distances, d)
             }
         }
     }
-    pdf("prova.pdf")
-    hist(distances)
-    dev.off()
-    print(distances)
+    #pdf("prova.pdf")
+    #x <- distances
+    #tmp <- hist(x, breaks=0:(max(x)+1), xaxt="n", right=FALSE, freq=FALSE)
+    #axis(1, at=tmp$mids, labels=0:max(x))
+    #plot(tmp)
+    #dev.off()
+    #print(len)
+    #print(distances)
+    return(distances)
 }
 
 # Esempio: nohup Rscript ExpJan2023commonSea.R TRUE 876 &
@@ -60,7 +65,7 @@ print(glue('seed: {seed}'))
 k       <- 2
 bias    <- 0.5
 noInitialStates <- 1000
-noNodes <- 10
+noNodes <- 100
 initialStates <- lapply(rep(1, noInitialStates), function(x) rndBooleanState(noNodes))
 noNetworks <- 100
 
@@ -80,7 +85,7 @@ if (!ALL_FUNCTIONS){
     print("all functions")
     expString <- "_allFunctions"
 }
-mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors{expString}_22Marzo23')
+mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors{expString}_29Marzo23')
 dir.create(mainFolder)
 subFolderSL_0 <- glue('{mainFolder}/sl0')
 dir.create(subFolderSL_0)
@@ -101,11 +106,13 @@ for(i in seq_len(noNetworks)){
     #saveAttractors(atts, glue('bn_{i}'),glue('{subFolderSL_0}') )
     CS <- commonSea(atts)
     ######################
-    distanceDistributionBetweenPseudoAttractors(atts)
-    break
+    distances <- distanceDistributionBetweenPseudoAttractors(atts)
+    if (!is.null(distances)){
+        write.table(as.matrix(t(distances)), glue('{mainFolder}/distances_sl_0.csv'),sep=",",append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+        #per leggerlo basta usare read.table(file,sep=",",fill=TRUE)
+    } 
     write(CS$commonSeaSize,  file=glue('{mainFolder}/commonSeaSize_sl_0.txt'),  append=TRUE)
-    write(CS$commonSeaOnes,  file=glue('{mainFolder}/commonSeaOnes_sl_0.txt'),  append=TRUE)
-
+    write(length(CS$commonSeaOnes),  file=glue('{mainFolder}/commonSeaOnes_sl_0.txt'),  append=TRUE)
     noAttractors        <- length(atts$attractors)
     noPseudoAttractors  <- numberOfPseudoAttractors(atts)
     write(noAttractors,  file=glue('{mainFolder}/no_attractors_0.txt'),  append=TRUE)
@@ -141,6 +148,11 @@ for(i in seq_len(noNetworks)){
             #saveAttractors(atts, glue('bn_{i}'),glue('{subFolderSL_n}') )
             CS <- commonSea(atts)
             ######################
+            distances <- distanceDistributionBetweenPseudoAttractors(atts)
+            if (!is.null(distances)){
+                write.table(as.matrix(t(distances)), glue('{mainFolder}/distances_sl_{noSelfLoops}_{SL_TYPE_STRING}.csv'),sep=",",append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+                #per leggerlo basta usare read.table(file,sep=",",fill=TRUE)
+            } 
             res <- retrieveSelfLoopsInCommonSea(temp_net, CS)
             res_elab <- lapply(res, FUN=length)
 
@@ -153,7 +165,7 @@ for(i in seq_len(noNetworks)){
             write(res_elab$inZEROS, file=glue('{mainFolder}/slInZeros_{noSelfLoops}_{SL_TYPE_STRING}.txt'), append=TRUE)
 
             write(CS$commonSeaSize,  file=glue('{mainFolder}/commonSeaSize_sl_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
-            write(CS$commonSeaOnes,  file=glue('{mainFolder}/commonSeaOnes_sl_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
+            write(length(CS$commonSeaOnes),  file=glue('{mainFolder}/commonSeaOnes_sl_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
 
         }
     }
