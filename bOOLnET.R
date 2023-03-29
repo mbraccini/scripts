@@ -1,5 +1,8 @@
 
 library(glue)
+
+hammingDistance <- function(x1,x2) sum(x1 != x2)
+
 #number of nodes in a network loaded with the load() function
 numberOfGenes <- function(net){
     return (length(net[[1]])) # We read from the imported network its number of nodes

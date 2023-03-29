@@ -13,18 +13,46 @@ retrieveSelfLoopsInCommonSea <- function(myNet, commonSea){
         return(list("inONES"=inONES,"inZEROS"=inZEROS))
 }
 
-# Number of pseudoAttractors
-numberOfPseudoAttractors <- function(attractors){
+# Retrieve the pseudoAttractors in a list structure
+retrieveListOfPseudoAttractors <- function(attractors){
     l <- list()
     noAttractors <- length(attractors$attractors)
     
     for (i in seq(1,noAttractors)){
         l[[i]] <- computePseudoAttractor(getAttractorSequence(attractors, i))
     }
-    return (length(unique(l)))
+    return (l)
 }
 
+# Number of pseudoAttractors
+numberOfPseudoAttractors <- function(attractors){
+        return (length(unique(retrieveListOfPseudoAttractors(attractors))))
+}
 
+# Compute distance between pseudoattractors (Hamming)
+distanceDistributionBetweenPseudoAttractors <- function(attractors){
+    pseudoAtts <- retrieveListOfPseudoAttractors(attractors)
+    len <- length(pseudoAtts)
+    distances <- c()
+    if (len > 1){
+        for (i in seq(1,len - 1)){
+            for (j in seq(i + 1, len)){
+                print(glue('{i}, {j}'))
+                print(pseudoAtts[[i]])
+                print(pseudoAtts[[j]])
+                d <- hammingDistance(pseudoAtts[[i]],pseudoAtts[[j]])
+                print(d)
+                distances <- c(distances, d)
+            }
+        }
+    }
+    pdf("prova.pdf")
+    hist(distances)
+    dev.off()
+    print(distances)
+}
+
+# Esempio: nohup Rscript ExpJan2023commonSea.R TRUE 876 &
 ALL_FUNCTIONS <- as.logical(args[1])
 seed = as.integer(args[2])
 set.seed(seed)
@@ -32,7 +60,7 @@ print(glue('seed: {seed}'))
 k       <- 2
 bias    <- 0.5
 noInitialStates <- 1000
-noNodes <- 100
+noNodes <- 10
 initialStates <- lapply(rep(1, noInitialStates), function(x) rndBooleanState(noNodes))
 noNetworks <- 100
 
@@ -73,7 +101,11 @@ for(i in seq_len(noNetworks)){
     #saveAttractors(atts, glue('bn_{i}'),glue('{subFolderSL_0}') )
     CS <- commonSea(atts)
     ######################
+    distanceDistributionBetweenPseudoAttractors(atts)
+    break
     write(CS$commonSeaSize,  file=glue('{mainFolder}/commonSeaSize_sl_0.txt'),  append=TRUE)
+    write(CS$commonSeaOnes,  file=glue('{mainFolder}/commonSeaOnes_sl_0.txt'),  append=TRUE)
+
     noAttractors        <- length(atts$attractors)
     noPseudoAttractors  <- numberOfPseudoAttractors(atts)
     write(noAttractors,  file=glue('{mainFolder}/no_attractors_0.txt'),  append=TRUE)
@@ -121,6 +153,7 @@ for(i in seq_len(noNetworks)){
             write(res_elab$inZEROS, file=glue('{mainFolder}/slInZeros_{noSelfLoops}_{SL_TYPE_STRING}.txt'), append=TRUE)
 
             write(CS$commonSeaSize,  file=glue('{mainFolder}/commonSeaSize_sl_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
+            write(CS$commonSeaOnes,  file=glue('{mainFolder}/commonSeaOnes_sl_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
 
         }
     }
@@ -132,3 +165,12 @@ for(i in seq_len(noNetworks)){
 #print(addSelfLoops(pippo, 3, constORSelfLoop))
 
 #saveNetwork(net, "prova/rete")
+
+
+
+#pdf("prova.pdf")
+#hist(trees$Height, breaks = 10, col = "orange")
+#dev.off()
+#
+
+
