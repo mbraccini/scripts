@@ -16,7 +16,17 @@ for (SLNUMBER in c(5,10,20))
         ls <- unlist(df)
         distances <- ls[!is.na(ls)]
         #hist(distances, breaks=0:(max(distances)+1), right=FALSE, freq=FALSE)
-        tmp <- hist(distances, breaks=0:(max(distances)+1), xaxt="n", right=FALSE, freq=FALSE,cex.lab=1, cex.axis=1.1,ylab="Relative Frequency",main=glue('{SLNUMBER}_{SL_TYPE}'))
+        tmp <- hist(distances, 
+                    breaks=0:(max(distances)+1), 
+                    xaxt="n", 
+                    right=FALSE, 
+                    freq=FALSE,
+                    cex.lab=1, 
+                    cex.axis=1.1,
+                    cex.main=0.9,
+                    ylab="Relative Frequency",
+                    xlab="Hamming distance",
+                    main=glue('{SLNUMBER}_{SL_TYPE}'))
         tmp$counts=tmp$counts/sum(tmp$counts)
         axis(1, at=tmp$mids, labels=0:max(distances),cex.axis=1.1)
 
