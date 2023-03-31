@@ -21,12 +21,12 @@ retrieveListOfPseudoAttractors <- function(attractors){
     for (i in seq(1,noAttractors)){
         l[[i]] <- computePseudoAttractor(getAttractorSequence(attractors, i))
     }
-    return (l)
+    return (unique(l))
 }
 
 # Number of pseudoAttractors
 numberOfPseudoAttractors <- function(attractors){
-        return (length(unique(retrieveListOfPseudoAttractors(attractors))))
+        return (length(retrieveListOfPseudoAttractors(attractors)))
 }
 
 # Compute distance between pseudoattractors (Hamming)
