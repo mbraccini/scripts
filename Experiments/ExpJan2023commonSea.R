@@ -3,59 +3,6 @@ library(BoolNet)
 source("../bOOLnET.R")
 args = commandArgs(trailingOnly=TRUE)
 
-#Check if selfloops are in the commonSea passed (COmposed of all 1's or all 0's)
-retrieveSelfLoopsInCommonSea <- function(myNet, commonSea){
-        tempSelfLoopsNames  <- paste0("Gene",getSelfLoops(myNet))
-        commonSeaONES       <- names(commonSea$commonSeaOnes)
-        CommonSeaZEROS      <- names(commonSea$commonSeaZeros)
-        inONES      <- tempSelfLoopsNames[tempSelfLoopsNames %in% commonSeaONES]
-        inZEROS     <- tempSelfLoopsNames[tempSelfLoopsNames %in% CommonSeaZEROS]
-        return(list("inONES"=inONES,"inZEROS"=inZEROS))
-}
-
-# Retrieve the pseudoAttractors in a list structure
-retrieveListOfPseudoAttractors <- function(attractors){
-    l <- list()
-    noAttractors <- length(attractors$attractors)
-    
-    for (i in seq(1,noAttractors)){
-        l[[i]] <- computePseudoAttractor(getAttractorSequence(attractors, i))
-    }
-    return (unique(l))
-}
-
-# Number of pseudoAttractors
-numberOfPseudoAttractors <- function(attractors){
-        return (length(retrieveListOfPseudoAttractors(attractors)))
-}
-
-# Compute distance between pseudoattractors (Hamming)
-distanceDistributionBetweenPseudoAttractors <- function(attractors){
-    pseudoAtts <- retrieveListOfPseudoAttractors(attractors)
-    len <- length(pseudoAtts)
-    distances <- c()
-    if (len > 1){
-        for (i in seq(1,len - 1)){
-            for (j in seq(i + 1, len)){
-                #print(glue('{i}, {j}'))
-                #print(pseudoAtts[[i]])
-                #print(pseudoAtts[[j]])
-                d <- hammingDistance(pseudoAtts[[i]],pseudoAtts[[j]])
-                #print(d)
-                distances <- c(distances, d)
-            }
-        }
-    }
-    #pdf("prova.pdf")
-    #x <- distances
-    #tmp <- hist(x, breaks=0:(max(x)+1), xaxt="n", right=FALSE, freq=FALSE)
-    #axis(1, at=tmp$mids, labels=0:max(x))
-    #plot(tmp)
-    #dev.off()
-    #print(len)
-    #print(distances)
-    return(distances)
-}
 
 # Esempio: nohup Rscript ExpJan2023commonSea.R TRUE 876 &
 ALL_FUNCTIONS <- as.logical(args[1])
