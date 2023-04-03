@@ -31,7 +31,7 @@ if (!ALL_FUNCTIONS){
 }
 
 
-for (noNodes in c(300, 500)){
+for (noNodes in c(700)){
     mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_{expString}_noPseudoAttsAsSizeIncreases_3Aprile')
     dir.create(mainFolder)
     subFolderSL_0 <- glue('{mainFolder}/sl0')
