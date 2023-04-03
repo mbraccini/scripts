@@ -1,8 +1,8 @@
 library(glue)
 
 type = "allFunctions" 
-type = "noTRUE_FALSE_XOR_XNOR"
-path=glue('n100k2p05_pseudoAttractors_{type}_29Marzo23')
+#type = "noTRUE_FALSE_XOR_XNOR"
+path=glue('n100k2p05_pseudoAttractors_{type}_31Marzo23')
 
 pdf(glue('DISTANCES_{type}.pdf'))
 par(mfrow=c(3,3), mai = c(0.53, 0.55, 0.14, 0))
@@ -20,14 +20,14 @@ for (SLNUMBER in c(5,10,20))
                     breaks=0:(max(distances)+1), 
                     xaxt="n", 
                     right=FALSE, 
-                    freq=FALSE,
+                    freq=TRUE,
                     cex.lab=1, 
                     cex.axis=1.1,
                     cex.main=0.9,
-                    ylab="Relative Frequency",
+                    ylab="Absolute Frequency",
                     xlab="Hamming distance",
                     main=glue('{SLNUMBER}_{SL_TYPE}'))
-        tmp$counts=tmp$counts/sum(tmp$counts)
+        #tmp$counts=tmp$counts/sum(tmp$counts)
         axis(1, at=tmp$mids, labels=0:max(distances),cex.axis=1.1)
 
     }

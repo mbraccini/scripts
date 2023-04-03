@@ -85,7 +85,7 @@ if (!ALL_FUNCTIONS){
     print("all functions")
     expString <- "_allFunctions"
 }
-mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors{expString}_29Marzo23')
+mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors{expString}_31Marzo23')
 dir.create(mainFolder)
 subFolderSL_0 <- glue('{mainFolder}/sl0')
 dir.create(subFolderSL_0)

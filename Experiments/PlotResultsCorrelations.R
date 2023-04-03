@@ -1,8 +1,8 @@
 library(glue)
 
-type = "allFunctions" 
+#type = "allFunctions" 
 type = "noTRUE_FALSE_XOR_XNOR"
-path=glue('n100k2p05_pseudoAttractors_{type}_29Marzo23')
+path=glue('n100k2p05_pseudoAttractors_{type}_31Marzo23')
 
 pdf(glue('CORRELATIONS_{type}.pdf'))
 par(mfrow=c(3,3), mai = c(0.58, 0.58, 0.17, 0.05))
