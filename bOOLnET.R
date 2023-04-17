@@ -304,14 +304,27 @@ retrieveListOfPseudoAttractors <- function(attractors){
     return (unique(l))
 }
 
-# Number of pseudoAttractors
-numberOfPseudoAttractors <- function(attractors){
-        return (length(retrieveListOfPseudoAttractors(attractors)))
+#PSEUDO-ATTRACTORS TO FILE
+savePseudoAttractors <- function(pseudoattractors, prefixName, path="."){
+    for (i in seq(1,length(pseudoattractors))){
+        att <- pseudoattractors[[i]] 
+        print(att)
+        print(t(att))
+        write.table(t(att), 
+                    glue('{path}/{prefixName}_pseudoAtt_{i}.csv'), 
+                    sep = ",", 
+                    #col.names = names(att),
+                    row.names=FALSE)
+    }
 }
 
+# Number of pseudoAttractors
+#numberOfPseudoAttractors <- function(attractors){
+#        return (length(retrieveListOfPseudoAttractors(attractors)))
+#}
+
 # Compute distance between pseudoattractors (Hamming)
-distanceDistributionBetweenPseudoAttractors <- function(attractors){
-    pseudoAtts <- retrieveListOfPseudoAttractors(attractors)
+distanceDistributionBetweenPseudoAttractors <- function(pseudoAtts){
     len <- length(pseudoAtts)
     distances <- c()
     if (len > 1){

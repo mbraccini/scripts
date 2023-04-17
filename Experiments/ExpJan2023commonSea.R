@@ -14,7 +14,7 @@ bias    <- 0.5
 noInitialStates <- 1000
 noNodes <- 100
 initialStates <- lapply(rep(1, noInitialStates), function(x) rndBooleanState(noNodes))
-noNetworks <- 100
+noNetworks <- 2
 
 
 if (!ALL_FUNCTIONS){
@@ -32,10 +32,12 @@ if (!ALL_FUNCTIONS){
     print("all functions")
     expString <- "_allFunctions"
 }
-mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors{expString}_31Marzo23')
+mainFolder <- glue('n{noNodes}k{k}p{gsub(".","",bias,fixed=TRUE)}_pseudoAttractors{expString}_17Aprile23')
 dir.create(mainFolder)
 subFolderSL_0 <- glue('{mainFolder}/sl0')
 dir.create(subFolderSL_0)
+attsSubFolderSL_0 <- glue('{subFolderSL_0}/atts')
+dir.create(attsSubFolderSL_0)
 
 
 for(i in seq_len(noNetworks)){
@@ -53,7 +55,9 @@ for(i in seq_len(noNetworks)){
     #saveAttractors(atts, glue('bn_{i}'),glue('{subFolderSL_0}') )
     CS <- commonSea(atts)
     ######################
-    distances <- distanceDistributionBetweenPseudoAttractors(atts)
+    pseudoAtts <- retrieveListOfPseudoAttractors(atts) #PSEUDO-ATTRACTORS
+    savePseudoAttractors(pseudoAtts, prefixName=glue('bn_{i}'), path=attsSubFolderSL_0)
+    distances <- distanceDistributionBetweenPseudoAttractors(pseudoAtts)
     if (!is.null(distances)){
         write.table(as.matrix(t(distances)), glue('{mainFolder}/distances_sl_0.csv'),sep=",",append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
         #per leggerlo basta usare read.table(file,sep=",",fill=TRUE)
@@ -61,7 +65,7 @@ for(i in seq_len(noNetworks)){
     write(CS$commonSeaSize,  file=glue('{mainFolder}/commonSeaSize_sl_0.txt'),  append=TRUE)
     write(length(CS$commonSeaOnes),  file=glue('{mainFolder}/commonSeaOnes_sl_0.txt'),  append=TRUE)
     noAttractors        <- length(atts$attractors)
-    noPseudoAttractors  <- numberOfPseudoAttractors(atts)
+    noPseudoAttractors  <- length(pseudoAtts)
     write(noAttractors,  file=glue('{mainFolder}/no_attractors_0.txt'),  append=TRUE)
     write(noPseudoAttractors,  file=glue('{mainFolder}/no_PseudoAttractors_0.txt'),  append=TRUE)
 
@@ -86,6 +90,8 @@ for(i in seq_len(noNetworks)){
 
             subFolderSL_n    <- glue('{mainFolder}/sl{noSelfLoops}_{SL_TYPE_STRING}')
             dir.create(subFolderSL_n)
+            attsSubFolderSL_n<- glue('{subFolderSL_n}/atts')
+            dir.create(attsSubFolderSL_n)
 
             temp_net <- addSelfLoops(net, noSelfLoops, SL_FUN)
             temp_bn  <- toBoolNet(temp_net, glue('{subFolderSL_n}/bn_{i}'))
@@ -95,7 +101,10 @@ for(i in seq_len(noNetworks)){
             #saveAttractors(atts, glue('bn_{i}'),glue('{subFolderSL_n}') )
             CS <- commonSea(atts)
             ######################
-            distances <- distanceDistributionBetweenPseudoAttractors(atts)
+            pseudoAtts <- retrieveListOfPseudoAttractors(atts) #PSEUDO-ATTRACTORS
+            savePseudoAttractors(pseudoAtts, prefixName=glue('bn_{i}'), path=attsSubFolderSL_n)
+
+            distances <- distanceDistributionBetweenPseudoAttractors(pseudoAtts)
             if (!is.null(distances)){
                 write.table(as.matrix(t(distances)), glue('{mainFolder}/distances_sl_{noSelfLoops}_{SL_TYPE_STRING}.csv'),sep=",",append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
                 #per leggerlo basta usare read.table(file,sep=",",fill=TRUE)
@@ -104,7 +113,7 @@ for(i in seq_len(noNetworks)){
             res_elab <- lapply(res, FUN=length)
 
             noAttractors        <- length(atts$attractors)
-            noPseudoAttractors  <- numberOfPseudoAttractors(atts)
+            noPseudoAttractors  <- length(pseudoAtts)
             write(noAttractors,  file=glue('{mainFolder}/no_attractors_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
             write(noPseudoAttractors,  file=glue('{mainFolder}/no_PseudoAttractors_{noSelfLoops}_{SL_TYPE_STRING}.txt'),  append=TRUE)
 
