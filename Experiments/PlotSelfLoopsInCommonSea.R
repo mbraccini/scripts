@@ -1,8 +1,12 @@
 library(glue)
 
-path="n100k2p05_pseudoAttractors_noTRUE_FALSE_XOR_XNOR/"
+type = "allFunctions" 
+#type = "noTRUE_FALSE_XOR_XNOR"
+path=glue('n100k2p05_pseudoAttractors_{type}_31Marzo23/')
 name <- "slInZeros"
-pdf(glue('SL_in_commonSea_pseudoAttractors_all_functions_noTRUE_FALSE_XOR_XNOR_{name}.pdf'))
+#name <- "slInOnes"
+
+pdf(glue('SL_in_commonSea_pseudoAttractors_all_functions_{type}_{name}.pdf'))
 res     <- list()
 labels  <- list()
 for (SLNUMBER in c(5,10,20))
@@ -15,6 +19,6 @@ for (SLNUMBER in c(5,10,20))
     labels[[length(labels)+1]] <- glue('{SLNUMBER}_Rnd')
 }
 
-boxplot(res, xaxt = "n", main="No. of selfloops in common sea with value 0", ylab="no. of selfloops")
+boxplot(res, xaxt = "n", main=glue('No. of selfloops in common sea with value {ifelse(name=="slInZeros", 0, 1)}'), ylab="no. of selfloops")
 axis(1, at = seq(1,length(res)), las = 2,labels = labels) # axis, ticks
 dev.off()
