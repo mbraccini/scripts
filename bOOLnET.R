@@ -308,8 +308,6 @@ retrieveListOfPseudoAttractors <- function(attractors){
 savePseudoAttractors <- function(pseudoattractors, prefixName, path="."){
     for (i in seq(1,length(pseudoattractors))){
         att <- pseudoattractors[[i]] 
-        print(att)
-        print(t(att))
         write.table(t(att), 
                     glue('{path}/{prefixName}_pseudoAtt_{i}.csv'), 
                     sep = ",", 
