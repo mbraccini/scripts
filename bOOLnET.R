@@ -306,14 +306,25 @@ retrieveListOfPseudoAttractors <- function(attractors){
 
 #PSEUDO-ATTRACTORS TO FILE
 savePseudoAttractors <- function(pseudoattractors, prefixName, path="."){
+    colNames <- names(pseudoattractors[[1]])
+    df <- data.frame(matrix(ncol = length(colNames), nrow = 0))
+    
     for (i in seq(1,length(pseudoattractors))){
         att <- pseudoattractors[[i]] 
-        write.table(t(att), 
-                    glue('{path}/{prefixName}_pseudoAtt_{i}.csv'), 
+        df <- rbind(df,att)
+        #write.table(t(att), 
+        #            glue('{path}/{prefixName}_pseudoAtt_{i}.csv'), 
+        #            sep = ",", 
+        #            #col.names = names(att),
+        #            row.names=FALSE)
+        
+    }
+   
+    write.table(df, 
+                    glue('{path}/{prefixName}_pseudoAtts.csv'), 
                     sep = ",", 
                     #col.names = names(att),
                     row.names=FALSE)
-    }
 }
 
 # Number of pseudoAttractors
