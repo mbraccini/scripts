@@ -1,8 +1,20 @@
 library(glue)
+library(pegas)
+library("factoextra")
 
 #type = "allFunctions" 
 type = "noTRUE_FALSE_XOR_XNOR"
 path=glue('n100k2p05_pseudoAttractors_{type}_26Aprile23')
+
+
+saveDendrogram <- function(df, filename){
+        res.dist <- pegas::dist.hamming(df)
+        res.hc <- hclust(d = res.dist, method = "complete")  
+        pdf(filename)
+        p <-fviz_dend(res.hc, cex = 0.5)
+        print(p)
+        dev.off()
+}
 
 res <- list()
 #names(a)[1] <- c("biill")
@@ -27,6 +39,10 @@ for (SLNUMBER in c(1,2,3,4,5,10,20))
             no_filtered_attrs <- nrow(df[condition, ])
             #print(glue('BEFORE: {before}, AFTER {no_filtered_attrs}'))
             numberOfAttractors <- c(numberOfAttractors, no_filtered_attrs)
+
+            if (no_filtered_attrs > 1 ){
+                #saveDendrogram(df[condition, ], glue('dendro_{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
+            }
 
         }
         res[[length(res) + 1]] <- numberOfAttractors
