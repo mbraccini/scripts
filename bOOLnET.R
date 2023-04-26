@@ -319,7 +319,7 @@ savePseudoAttractors <- function(pseudoattractors, prefixName, path="."){
         #            row.names=FALSE)
         
     }
-   
+    colnames(df) <- colNames
     write.table(df, 
                     glue('{path}/{prefixName}_pseudoAtts.csv'), 
                     sep = ",", 
