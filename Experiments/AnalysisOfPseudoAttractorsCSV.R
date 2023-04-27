@@ -69,59 +69,56 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 ################################################
 ################################################
 
-hier.clustering <- function(dist){
-    res.hc <- hclust(d = dist, method = "complete")  
-    return (res.hc)
-    #return(fviz_dend(res.hc, cex = 0.5))
-}
 
-beforeAfterAnalysis <- function(df.complete, df.filtered, title, path, filename){
+dendrogramma <- function(df.complete, df.filtered, title, path, filename){
     dist.complete <- pegas::dist.hamming(df.complete)
     dist.filtered <- pegas::dist.hamming(df.filtered)
     
+    hc.complete <- hclust(d = dist.complete, method = "complete")  
+    hc.filtered <- hclust(d = dist.filtered, method = "complete")  
+
     # DENDROGRAMMA #
     pdf(glue('{path}dendro_{filename}'))
     dendro.plots <- list()  # new empty list
-    dendro.plots[[1]] <- fviz_dend(hier.clustering(dist.complete), cex = 0.5, main=glue('complete - {title}'))
-    dendro.plots[[2]] <- fviz_dend(hier.clustering(dist.filtered), cex = 0.5, main=glue('filtered - {title}'))
+    dendro.plots[[1]] <- fviz_dend(hc.complete, cex = 0.5, main=glue('COMPLETE - {title}'))
+    dendro.plots[[2]] <- fviz_dend(hc.filtered, cex = 0.5, main=glue('FILTERED - {title}'))
     multiplot(plotlist = dendro.plots, cols = 2)
     dev.off()  
     ################  
+    
+}
 
+generateDistributionsOfDistancesPlots <- function(distrib.complete, distrib.filtered, title, path, filename){
     # DISTRIBUZIONI DI DISTANZE #
-    pdf(glue('{path}dist_{filename}'))
-    distrib.plots <- list()  # new empty list
-    distrib.complete <- unlist(dist.complete)
-    distrib.plots[[1]] <- hist(distrib.complete, 
-                    breaks=0:(max(distrib.complete)+1), 
-                    xaxt="n", 
-                    right=FALSE, 
-                    freq=TRUE,
-                    cex.lab=1, 
-                    cex.axis=1.1,
-                    cex.main=0.9,
-                    ylab="Absolute Frequency",
-                    xlab="Hamming distance",
-                    main=glue('COMPLETE'))
-        #tmp$counts=tmp$counts/sum(tmp$counts)
-    axis(1, at=distrib.plots[[1]]$mids, labels=0:max(distrib.complete), cex.axis=1.1)
-
-    distrib.filtered <- unlist(dist.filtered)
-    distrib.plots[[2]] <- hist(distrib.filtered, 
-                    breaks=0:(max(distrib.filtered)+1), 
-                    xaxt="n", 
-                    right=FALSE, 
-                    freq=TRUE,
-                    cex.lab=1, 
-                    cex.axis=1.1,
-                    cex.main=0.9,
-                    ylab="Absolute Frequency",
-                    xlab="Hamming distance",
-                    main=glue('FILTERED'))
-        #tmp$counts=tmp$counts/sum(tmp$counts)
-    axis(1, at=distrib.plots[[2]]$mids, labels=0:max(distrib.filtered), cex.axis=1.1)
-    multiplot(plotlist = distrib.plots, cols = 3)
-    dev.off()  
+        pdf(glue('{path}dist_{filename}'))
+        par(mfrow=c(1,2))
+        t.complete <- hist(distrib.complete, 
+                        breaks=0:(max(distrib.complete)+1), 
+                        xaxt="n", 
+                        right=FALSE, 
+                        freq=TRUE,
+                        cex.lab=1, 
+                        cex.axis=1.1,
+                        cex.main=0.9,
+                        ylab="Absolute Frequency",
+                        xlab="Hamming distance",
+                        main=glue('COMPLETE: {title}'))
+            #tmp$counts=tmp$counts/sum(tmp$counts)
+        axis(1, at=t.complete$mids, labels=0:max(distrib.complete), cex.axis=1.1)
+        t.filtered <- hist(distrib.filtered, 
+                        breaks=0:(max(distrib.filtered)+1), 
+                        xaxt="n", 
+                        right=FALSE, 
+                        freq=TRUE,
+                        cex.lab=1, 
+                        cex.axis=1.1,
+                        cex.main=0.9,
+                        ylab="Absolute Frequency",
+                        xlab="Hamming distance",
+                        main=glue('FILTERED: {title}'))
+            #tmp$counts=tmp$counts/sum(tmp$counts)
+        axis(1, at=t.filtered$mids, labels=0:max(distrib.filtered), cex.axis=1.1)
+        dev.off()  
 }
 
 #saveDendrogram <- function(df, filename){
@@ -142,14 +139,19 @@ beforeAfterAnalysis <- function(df.complete, df.filtered, title, path, filename)
 
 res <- list()
 #names(a)[1] <- c("biill")
-for (SLNUMBER in c(1))#,2,3,4,5,10,20))
+for (SLNUMBER in c(1,2,3,4,5,10,20))
 {
     for (SLTYPE in c("_augmAND","_augmOR")){
-        numberOfAttractors <- c()
-        for (NET in seq(1,1)){
+        numberOfAttractors  <- c()
+        distrib.complete    <- c()
+        distrib.filtered    <- c()
+        for (NET in seq(1,100)){
+            
             specific_path <- glue('{path}/sl{SLNUMBER}{SLTYPE}/atts/bn_{NET}_pseudoAtts.csv')
-            #print(specific_path)
             df <- read.csv(specific_path, header=TRUE)
+
+            net.path = glue('{path}/analysis/bn_{NET}/')
+            dir.create(net.path)
 
             condition <- seq_len(nrow(df))    
             for (COLUMN in seq(1,SLNUMBER)){
@@ -165,11 +167,22 @@ for (SLNUMBER in c(1))#,2,3,4,5,10,20))
             numberOfAttractors <- c(numberOfAttractors, no_filtered_attrs)
 
             if (no_filtered_attrs > 1 ){
-                #saveDendrogram(df[condition, ], glue('dendro_{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
-                beforeAfterAnalysis(df,df[condition, ],  glue('bn{NET}_sl{SLNUMBER}{SLTYPE}'), sub.path, glue('bn{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
+                dendrogramma(df,
+                            df[condition, ],  
+                            glue('bn{NET}_sl{SLNUMBER}{SLTYPE}'), 
+                            net.path, 
+                            glue('bn{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
+                distrib.complete <- c(distrib.complete, pegas::dist.hamming(df))
+                distrib.filtered <- c(distrib.filtered, pegas::dist.hamming(df[condition, ]))
             }
 
         }
+        generateDistributionsOfDistancesPlots(distrib.complete, 
+                                            distrib.filtered, 
+                                            glue('sl{SLNUMBER}{SLTYPE}'), 
+                                            sub.path, 
+                                            glue('sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
+
         res[[length(res) + 1]] <- numberOfAttractors
         names(res)[length(res)] <- glue('{SLNUMBER}{SLTYPE}')
     }
