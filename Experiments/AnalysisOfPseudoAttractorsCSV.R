@@ -6,6 +6,8 @@ library(ggplot2)
 #type = "allFunctions" 
 type = "noTRUE_FALSE_XOR_XNOR"
 path=glue('n100k2p05_pseudoAttractors_{type}_26Aprile23')
+sub.path = glue('{path}/analysis/')
+dir.create(sub.path)
 
 ################################################
 ################################################
@@ -85,6 +87,41 @@ beforeAfterAnalysis <- function(df.complete, df.filtered, title, path, filename)
     multiplot(plotlist = dendro.plots, cols = 2)
     dev.off()  
     ################  
+
+    # DISTRIBUZIONI DI DISTANZE #
+    pdf(glue('{path}dist_{filename}'))
+    distrib.plots <- list()  # new empty list
+    distrib.complete <- unlist(dist.complete)
+    distrib.plots[[1]] <- hist(distrib.complete, 
+                    breaks=0:(max(distrib.complete)+1), 
+                    xaxt="n", 
+                    right=FALSE, 
+                    freq=TRUE,
+                    cex.lab=1, 
+                    cex.axis=1.1,
+                    cex.main=0.9,
+                    ylab="Absolute Frequency",
+                    xlab="Hamming distance",
+                    main=glue('COMPLETE'))
+        #tmp$counts=tmp$counts/sum(tmp$counts)
+    axis(1, at=distrib.plots[[1]]$mids, labels=0:max(distrib.complete), cex.axis=1.1)
+
+    distrib.filtered <- unlist(dist.filtered)
+    distrib.plots[[2]] <- hist(distrib.filtered, 
+                    breaks=0:(max(distrib.filtered)+1), 
+                    xaxt="n", 
+                    right=FALSE, 
+                    freq=TRUE,
+                    cex.lab=1, 
+                    cex.axis=1.1,
+                    cex.main=0.9,
+                    ylab="Absolute Frequency",
+                    xlab="Hamming distance",
+                    main=glue('FILTERED'))
+        #tmp$counts=tmp$counts/sum(tmp$counts)
+    axis(1, at=distrib.plots[[2]]$mids, labels=0:max(distrib.filtered), cex.axis=1.1)
+    multiplot(plotlist = distrib.plots, cols = 3)
+    dev.off()  
 }
 
 #saveDendrogram <- function(df, filename){
@@ -129,7 +166,7 @@ for (SLNUMBER in c(1))#,2,3,4,5,10,20))
 
             if (no_filtered_attrs > 1 ){
                 #saveDendrogram(df[condition, ], glue('dendro_{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
-                beforeAfterAnalysis(df,df[condition, ],  glue('bn{NET}_sl{SLNUMBER}{SLTYPE}'), "./", glue('bn{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
+                beforeAfterAnalysis(df,df[condition, ],  glue('bn{NET}_sl{SLNUMBER}{SLTYPE}'), sub.path, glue('bn{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
             }
 
         }
