@@ -142,9 +142,10 @@ res <- list()
 for (SLNUMBER in c(1,2,3,4,5,10,20))
 {
     for (SLTYPE in c("_augmAND","_augmOR")){
-        numberOfAttractors  <- c()
-        distrib.complete    <- c()
-        distrib.filtered    <- c()
+        numberOfAttractorsBEFORE    <- c()
+        numberOfAttractors          <- c()
+        distrib.complete            <- c()
+        distrib.filtered            <- c()
         for (NET in seq(1,100)){
             
             specific_path <- glue('{path}/sl{SLNUMBER}{SLTYPE}/atts/bn_{NET}_pseudoAtts.csv')
@@ -161,30 +162,35 @@ for (SLNUMBER in c(1,2,3,4,5,10,20))
                     condition <- intersect(condition, which(df[,COLUMN] == 1))
                 }
             }
-            #before <- nrow(df)
+            before <- nrow(df)
             no_filtered_attrs <- nrow(df[condition, ])
             #print(glue('BEFORE: {before}, AFTER {no_filtered_attrs}'))
-            numberOfAttractors <- c(numberOfAttractors, no_filtered_attrs)
+            numberOfAttractorsBEFORE    <- c(numberOfAttractorsBEFORE, before)
+            numberOfAttractors          <- c(numberOfAttractors, no_filtered_attrs)
 
-            if (no_filtered_attrs > 1 ){
-                dendrogramma(df,
-                            df[condition, ],  
-                            glue('bn{NET}_sl{SLNUMBER}{SLTYPE}'), 
-                            net.path, 
-                            glue('bn{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
-                distrib.complete <- c(distrib.complete, pegas::dist.hamming(df))
-                distrib.filtered <- c(distrib.filtered, pegas::dist.hamming(df[condition, ]))
-            }
+            #if (no_filtered_attrs > 1 ){
+            #    dendrogramma(df,
+            #                df[condition, ],  
+            #                glue('bn{NET}_sl{SLNUMBER}{SLTYPE}'), 
+            #                net.path, 
+            #                glue('bn{NET}_sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
+            #    distrib.complete <- c(distrib.complete, pegas::dist.hamming(df))
+            #    distrib.filtered <- c(distrib.filtered, pegas::dist.hamming(df[condition, ]))
+            #}
 
         }
-        generateDistributionsOfDistancesPlots(distrib.complete, 
-                                            distrib.filtered, 
-                                            glue('sl{SLNUMBER}{SLTYPE}'), 
-                                            sub.path, 
-                                            glue('sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
+        #generateDistributionsOfDistancesPlots(distrib.complete, 
+        #                                    distrib.filtered, 
+        #                                    glue('sl{SLNUMBER}{SLTYPE}'), 
+        #                                    sub.path, 
+        #                                    glue('sl{SLNUMBER}{SLTYPE}_{type}.pdf'))
 
-        res[[length(res) + 1]] <- numberOfAttractors
+        
+        res[[length(res) + 1]] <- numberOfAttractorsBEFORE + 1
+        names(res)[length(res)] <- glue('before_{SLNUMBER}{SLTYPE}')
+        res[[length(res) + 1]] <- numberOfAttractors + 1
         names(res)[length(res)] <- glue('{SLNUMBER}{SLTYPE}')
+        
     }
 }
 
@@ -192,9 +198,9 @@ for (SLNUMBER in c(1,2,3,4,5,10,20))
 #print(names(res))
 
 pdf(glue('filtered_noPseudoAttrs_{type}.pdf'))
-par( mar = c(6.5, 4, 2, 2))
+par( mar = c(8.5, 4, 2, 2))
 
-boxplot(res, xaxt = "n",  ylab="no. of (pseudo)attractors")
+boxplot(res , log="y", xaxt = "n",  ylab="no. of (pseudo)attractors + 1")
 axis(1, at = seq(1,length(res)), las = 2,labels = names(res)) # axis, ticks
 dev.off()
 
