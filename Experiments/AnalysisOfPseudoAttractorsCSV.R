@@ -3,11 +3,28 @@ library(pegas)
 library("factoextra")
 library(ggplot2)
 
-type = "allFunctions" 
-#type = "noTRUE_FALSE_XOR_XNOR"
+#type = "allFunctions" 
+type = "noTRUE_FALSE_XOR_XNOR"
 path=glue('n100k2p05_pseudoAttractors_{type}_26Aprile23')
 sub.path = glue('{path}/analysis/')
 dir.create(sub.path)
+
+commonSeaFromDataFrame <- function(df){
+    
+    temp <- colSums(df, na.rm=FALSE)/nrow(df)
+
+    commonSeaOnes   <- which(temp==1)
+    commonSeaZeros  <- which(temp==0)
+    specificIsland <- temp[which(temp!=1 & temp!=0)]
+    return(
+            list("commonSeaSize"  = length(commonSeaOnes) + length(commonSeaZeros),
+                 "commonSeaOnes"  = commonSeaOnes,
+                 "commonSeaZeros" = commonSeaZeros,
+                 "specificIslandSize" = length(specificIsland),
+                 "specificIsland"= specificIsland
+                )
+            )
+}
 
 ################################################
 ################################################
@@ -137,23 +154,36 @@ generateDistributionsOfDistancesPlots <- function(distrib.complete, distrib.filt
 #        dev.off()
 #}
 
-res <- list()
+res             <- list()
+resCommonSea    <- list()
 #names(a)[1] <- c("biill")
 
 #0 autoanelli
-numberOfAttractorsBEFORE     <- c()
+numberOfAttractorsBEFORE    <- c()
+commonSeaBEFORE             <- c()
 for (NET in seq(1,100)){
     path_0sl <- glue('{path}/sl0/atts/bn_{NET}_pseudoAtts.csv')
     df <- read.csv(path_0sl, header=TRUE)
-    before <- nrow(df)
-    numberOfAttractorsBEFORE    <- c(numberOfAttractorsBEFORE, before)
+
+    beforeNumAtts <- nrow(df)
+    numberOfAttractorsBEFORE    <- c(numberOfAttractorsBEFORE, beforeNumAtts)
+
+    if(beforeNumAtts > 1){
+        beforeCommonSea <- commonSeaFromDataFrame(df)$commonSeaSize
+        commonSeaBEFORE    <- c(commonSeaBEFORE, beforeCommonSea)
+    }
 }
 res[[length(res) + 1]] <- numberOfAttractorsBEFORE + 1
-names(res)[length(res)] <- glue('before_sl0')
+names(res)[length(res)] <- glue('sl0')
+
+resCommonSea[[length(resCommonSea) + 1]] <- commonSeaBEFORE 
+names(resCommonSea)[length(resCommonSea)] <- glue('sl0')
 
 for (SLNUMBER in c(1,2,3,4,5,10,20))
 {
     for (SLTYPE in c("_augmAND","_augmOR")){
+        commonSeaBEFORE             <- c()
+        commonSea                   <- c()
         numberOfAttractorsBEFORE    <- c()
         numberOfAttractors          <- c()
         distrib.complete            <- c()
@@ -174,12 +204,24 @@ for (SLNUMBER in c(1,2,3,4,5,10,20))
                     condition <- intersect(condition, which(df[,COLUMN] == 1))
                 }
             }
-            before <- nrow(df)
-            no_filtered_attrs <- nrow(df[condition, ])
+            #NUMBER OF PSEUDOTTRACTORS
+            beforeAtts  <- nrow(df)
+            after   <- df[condition, ]
+            no_filtered_attrs <- nrow(after)
             #print(glue('BEFORE: {before}, AFTER {no_filtered_attrs}'))
-            numberOfAttractorsBEFORE    <- c(numberOfAttractorsBEFORE, before)
+            numberOfAttractorsBEFORE    <- c(numberOfAttractorsBEFORE, beforeAtts)
             numberOfAttractors          <- c(numberOfAttractors, no_filtered_attrs)
-
+            
+            #COMMON SEA
+            if(beforeAtts > 1 && no_filtered_attrs > 1){
+                #print("un solo pseudoattrattore")
+                beforeCommonSea     <- commonSeaFromDataFrame(df)$commonSeaSize
+                commonSeaBEFORE     <- c(commonSeaBEFORE, beforeCommonSea)
+            #}
+            #if(no_filtered_attrs > 1){
+                commonSeaAFTER       <- commonSeaFromDataFrame(after)$commonSeaSize
+                commonSea           <- c(commonSea, commonSeaAFTER)
+            }
             #if (no_filtered_attrs > 1 ){
             #    dendrogramma(df,
             #                df[condition, ],  
@@ -203,6 +245,11 @@ for (SLNUMBER in c(1,2,3,4,5,10,20))
         res[[length(res) + 1]] <- numberOfAttractors + 1
         names(res)[length(res)] <- glue('{SLNUMBER}{SLTYPE}')
         
+
+        resCommonSea[[length(resCommonSea) + 1]] <- commonSeaBEFORE 
+        names(resCommonSea)[length(resCommonSea)] <- glue('before_{SLNUMBER}{SLTYPE}')
+        resCommonSea[[length(resCommonSea) + 1]] <- commonSea 
+        names(resCommonSea)[length(resCommonSea)] <- glue('{SLNUMBER}{SLTYPE}')
     }
 }
 
@@ -210,11 +257,19 @@ for (SLNUMBER in c(1,2,3,4,5,10,20))
 #print(names(res))
 
 pdf(glue('filtered_noPseudoAttrs_{type}.pdf'))
-par( mar = c(8.5, 4, 2, 2))
+par( mar = c(9, 4, 2, 2))
 
 boxplot(res , log="y", xaxt = "n",  ylab="no. of (pseudo)attractors + 1")
 axis(1, at = seq(1,length(res)), las = 2,labels = names(res)) # axis, ticks
 dev.off()
 
+
+
+pdf(glue('filtered_commonSea_{type}_greater1_both.pdf'))
+par( mar = c(9, 4, 4, 2))
+
+boxplot(resCommonSea , xaxt = "n",  ylab="Common Sea size",ylim=c(0,100),main="Considering RBNs with no. of pseudoattractors greater \n than 1 in both conditions (before and after filtering)")
+axis(1, at = seq(1,length(resCommonSea)), las = 2,labels = names(resCommonSea)) # axis, ticks
+dev.off()
 #pdf(glue('DISTANCES_{type}_sl_0.pdf'))
 #dev.off()
