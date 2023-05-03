@@ -3,8 +3,8 @@ library(pegas)
 library("factoextra")
 library(ggplot2)
 
-#type = "allFunctions" 
-type = "noTRUE_FALSE_XOR_XNOR"
+type = "allFunctions" 
+#type = "noTRUE_FALSE_XOR_XNOR"
 path=glue('n100k2p05_pseudoAttractors_{type}_26Aprile23')
 sub.path = glue('{path}/analysis/')
 dir.create(sub.path)
@@ -139,6 +139,18 @@ generateDistributionsOfDistancesPlots <- function(distrib.complete, distrib.filt
 
 res <- list()
 #names(a)[1] <- c("biill")
+
+#0 autoanelli
+numberOfAttractorsBEFORE     <- c()
+for (NET in seq(1,100)){
+    path_0sl <- glue('{path}/sl0/atts/bn_{NET}_pseudoAtts.csv')
+    df <- read.csv(path_0sl, header=TRUE)
+    before <- nrow(df)
+    numberOfAttractorsBEFORE    <- c(numberOfAttractorsBEFORE, before)
+}
+res[[length(res) + 1]] <- numberOfAttractorsBEFORE + 1
+names(res)[length(res)] <- glue('before_sl0')
+
 for (SLNUMBER in c(1,2,3,4,5,10,20))
 {
     for (SLTYPE in c("_augmAND","_augmOR")){
